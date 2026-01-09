@@ -1,0 +1,203 @@
+product_urls = [
+        "https://www.trendyol.com/kitchen-queen-home/katlanir-kovali-turuncu-mob-55-cm-kendinden-sikmali-mop-p-900924946",
+        "https://www.trendyol.com/jbl/tune-525bt-mavi-multi-connect-wireless-kulak-ustu-kulaklik-p-901332020"
+  
+        # Add more URLs here
+    ]
+
+
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from webdriver_manager.chrome import ChromeDriverManager
+import time
+
+PRODUCT_URL = "https://www.trendyol.com/kitchen-queen-home/katlanir-kovali-turuncu-mob-55-cm-kendinden-sikmali-mop-p-900924946"
+
+options = webdriver.ChromeOptions()
+options.add_argument("--start-maximized")
+
+# Persistent profile (login stays)
+options.add_argument(r"--user-data-dir=C:\selenium_profiles\trendyol")
+
+driver = webdriver.Chrome(
+    service=Service(ChromeDriverManager().install()),
+    options=options
+)
+
+wait = WebDriverWait(driver, 30)
+
+try:
+    # -------------------------------------------------
+    # 1. OPEN PRODUCT PAGE
+    # -------------------------------------------------
+    driver.get(PRODUCT_URL)
+
+    # -------------------------------------------------
+    # 2. REJECT COOKIES (IF PRESENT)
+    # -------------------------------------------------
+    try:
+        reject_btn = wait.until(
+            EC.element_to_be_clickable(
+                (By.XPATH, "//button[contains(., 'Reddet') or contains(., 'Reject')]")
+            )
+        )
+        reject_btn.click()
+        time.sleep(1)
+        print("Cookies rejected.")
+    except:
+        print("No cookie popup.")
+
+    # -------------------------------------------------
+    # 3. REMOVE ONBOARDING OVERLAY
+    # -------------------------------------------------
+    driver.execute_script("""
+        const overlay = document.querySelector('[data-testid="overlay"]');
+        if (overlay) overlay.remove();
+    """)
+    print("Onboarding overlay cleared.")
+
+    # -------------------------------------------------
+    # 4. CLICK BUY NOW (ŞİMDİ AL)
+    # -------------------------------------------------
+    buy_now_btn = wait.until(
+        EC.presence_of_element_located(
+            (
+                By.XPATH,
+                "//button[.//span[normalize-space()='Şimdi Al'] or normalize-space()='Şimdi Al']"
+            )
+        )
+    )
+
+    driver.execute_script(
+        "arguments[0].scrollIntoView({block:'center'});",
+        buy_now_btn
+    )
+    time.sleep(0.5)
+    driver.execute_script("arguments[0].click();", buy_now_btn)
+    print("Buy Now clicked.")
+
+    # -------------------------------------------------
+    # 5. WAIT FOR CHECKOUT PAGE
+    # -------------------------------------------------
+    wait.until(
+        EC.presence_of_element_located(
+            (By.XPATH, "//*[contains(text(),'Sipariş') or contains(text(),'Özet')]")
+        )
+    )
+    print("Checkout page loaded.")
+
+    # -------------------------------------------------
+    # 6. CLICK MESAFELİ SATIŞ SÖZLEŞMESİ (TEXT ONLY)
+    # -------------------------------------------------
+    distance_sales_text = wait.until(
+        EC.presence_of_element_located(
+            (By.XPATH, "//*[contains(text(),'Mesafeli Satış Sözleşmesi')]")
+        )
+    )
+
+    driver.execute_script(
+        "arguments[0].scrollIntoView({block:'center'});",
+        distance_sales_text
+    )
+    time.sleep(0.5)
+
+    driver.execute_script(
+        "arguments[0].dispatchEvent(new MouseEvent('click', {bubbles:true}));",
+        distance_sales_text
+    )
+    print("Mesafeli Satış Sözleşmesi opened.")
+
+    # -------------------------------------------------
+    # 7. SWITCH TO AGREEMENT IFRAME (MODAL)
+    # -------------------------------------------------
+    time.sleep(2)
+
+    iframe = wait.until(
+        EC.presence_of_element_located((By.XPATH, "//iframe"))
+    )
+
+    driver.switch_to.frame(iframe)
+    print("Switched to agreement iframe.")
+
+    # -------------------------------------------------
+    # 8. SCROLL INSIDE MODAL TO LOAD SELLER DETAILS
+    # -------------------------------------------------
+    scroll_container = driver.find_element(
+        By.XPATH,
+        "//div[contains(@class,'content') or contains(@class,'scroll')]"
+    )
+
+    last_height = 0
+    while True:
+        driver.execute_script(
+            "arguments[0].scrollTop = arguments[0].scrollHeight",
+            scroll_container
+        )
+        time.sleep(1)
+
+        new_height = driver.execute_script(
+            "return arguments[0].scrollHeight",
+            scroll_container
+        )
+
+        if new_height == last_height:
+            break
+        last_height = new_height
+
+    print("Agreement modal fully scrolled.")
+
+    # -------------------------------------------------
+    # 9. EXTRACT DATA
+    # -------------------------------------------------
+    def extract_value(label):
+        return driver.find_element(
+            By.XPATH,
+            f"//*[contains(text(),'{label}')]/following-sibling::*"
+        ).text.strip()
+
+    try:
+        seller_name = extract_value("Satıcının Ticaret Unvanı")
+    except:
+        seller_name = "Not found"
+
+    try:
+        seller_address = extract_value("Satıcının Adresi")
+    except:
+        seller_address = "Not found"
+
+    try:
+        seller_phone = extract_value("Satıcının Telefonu")
+    except:
+        seller_phone = "Not found"
+
+    try:
+        product_name = driver.find_element(
+            By.XPATH,
+            "//table//tr[1]/td[1]"
+        ).text.strip()
+    except:
+        product_name = "Not found"
+
+    # -------------------------------------------------
+    # 10. PRINT RESULTS
+    # -------------------------------------------------
+    print("\n========= EXTRACTED DETAILS =========")
+    print(f"Product Name   : {product_name}")
+    print(f"Seller Name    : {seller_name}")
+    print(f"Seller Address : {seller_address}")
+    print(f"Seller Phone   : {seller_phone}")
+    print("====================================\n")
+
+    # -------------------------------------------------
+    # 11. STOP – KEEP BROWSER OPEN
+    # -------------------------------------------------
+    input("Press ENTER to close browser...")
+
+except Exception as e:
+    print("Unexpected error:", e)
+    input("Press ENTER to close browser...")
+
+# DO NOT call driver.quit()
