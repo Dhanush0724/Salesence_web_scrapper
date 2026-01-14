@@ -169,6 +169,52 @@ def search_urls(db_path='product_urls.db', search_term=''):
     conn.close()
 
 
+def delete_first_n_urls(db_path='product_urls.db', n=10):
+    """Delete the first N URLs with 'pending' status from the database"""
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    
+    # Get the first N URLs with pending status to show what will be deleted
+    cursor.execute(f'''
+        SELECT id, url, category, status
+        FROM product_urls
+        WHERE status = 'pending'
+        ORDER BY id ASC
+        LIMIT {n}
+    ''')
+    
+    urls_to_delete = cursor.fetchall()
+    
+    if not urls_to_delete:
+        print("\nNo pending URLs to delete!")
+        conn.close()
+        return
+    
+    print(f"\n{'='*80}")
+    print(f"PENDING URLS TO BE DELETED (First {len(urls_to_delete)})")
+    print(f"{'='*80}\n")
+    
+    for id_, url, category, status in urls_to_delete:
+        print(f"{id_:4d} | {category:15s} | {status:10s} | {url}")
+    
+    # Confirm deletion
+    confirm = input(f"\nDelete these {len(urls_to_delete)} pending URLs? (yes/no): ").strip().lower()
+    
+    if confirm == 'yes':
+        # Get the IDs to delete
+        ids_to_delete = [row[0] for row in urls_to_delete]
+        placeholders = ','.join('?' * len(ids_to_delete))
+        
+        cursor.execute(f'DELETE FROM product_urls WHERE id IN ({placeholders})', ids_to_delete)
+        conn.commit()
+        
+        print(f"\n✓ Successfully deleted {len(urls_to_delete)} pending URLs!")
+    else:
+        print("\n✗ Deletion cancelled.")
+    
+    conn.close()
+
+
 def interactive_menu():
     """Interactive menu to view URLs"""
     db_path = 'product_urls.db'
@@ -185,6 +231,7 @@ def interactive_menu():
         print("6. Export to CSV (Excel)")
         print("7. Search URLs")
         print("8. View custom number of URLs")
+        print("9. Delete first N URLs")
         print("0. Exit")
         
         choice = input("\nEnter choice: ").strip()
@@ -215,6 +262,13 @@ def interactive_menu():
             try:
                 limit = int(input("How many URLs to display? "))
                 view_all_urls(db_path, limit=limit)
+            except ValueError:
+                print("Invalid number!")
+        
+        elif choice == '9':
+            try:
+                n = int(input("How many pending URLs to delete from the top? "))
+                delete_first_n_urls(db_path, n=n)
             except ValueError:
                 print("Invalid number!")
         

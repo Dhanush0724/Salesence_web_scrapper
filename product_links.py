@@ -33,20 +33,163 @@ from datetime import datetime
 #     "kulaklık",     # headphones
 #     "saat",         # watches
 # ]
-SEARCH_TERMS = [
-    "ev aletleri",        # home appliances
-    "bebek ürünleri",     # baby products
-    "spor ayakkabı",      # sports shoes
-    "erkek tişört",       # men’s apparel
-    "kadın ceket",        # women’s jackets
-    "mutfak gereçleri",  # kitchen tools
-    "oyuncak",            # toys
-    "spor ekipmanları",  # sports equipment
-    "ev dekorasyonu",    # home decoration
-    "kişisel bakım",     # personal care
+# SEARCH_TERMS = [
+#     "ev aletleri",        # home appliances
+#     "bebek ürünleri",     # baby products
+#     "spor ayakkabı",      # sports shoes
+#     "erkek tişört",       # men’s apparel
+#     "kadın ceket",        # women’s jackets
+#     "mutfak gereçleri",  # kitchen tools
+#     "oyuncak",            # toys
+#     "spor ekipmanları",  # sports equipment
+#     "ev dekorasyonu",    # home decoration
+#     "kişisel bakım",     # personal care
+# ]
+
+SEARCH_TERMS = [  
+    # Fashion - Women
+    "kadın elbise",        # women's dresses
+    "kadın ceket",         # women's jackets
+    "kadın ayakkabı",      # women's shoes
+    "kadın çanta",         # women's bags
+    "kadın bluz",          # women's blouses
+    "kadın pantolon",      # women's pants
+    "kadın bot",           # women's boots
+    "kadın sweatshirt",    # women's sweatshirts
+    "kadın mayo",          # women's swimwear
+    "kadın takı",          # women's jewelry
+    
+    # Fashion - Men
+    "erkek tişört",        # men's t-shirts
+    "erkek gömlek",        # men's shirts
+    "erkek ayakkabı",      # men's shoes
+    "erkek pantolon",      # men's pants
+    "erkek mont",          # men's coats
+    "erkek spor ayakkabı", # men's sneakers
+    "erkek kemer",         # men's belts
+    "erkek cüzdan",        # men's wallets
+    "erkek parfüm",        # men's perfume
+    "erkek sırt çantası",  # men's backpacks
+    
+    # Home & Living
+    "ev aletleri",         # home appliances
+    "mutfak gereçleri",    # kitchen tools
+    "ev dekorasyonu",      # home decoration
+    "yatak örtüsü",        # bedding
+    "perde",               # curtains
+    "halı",                # carpets
+    "aydınlatma",          # lighting
+    "mobilya",             # furniture
+    "banyo aksesuarları",  # bathroom accessories
+    "depolama",            # storage solutions
+    
+    # Beauty & Personal Care
+    "kişisel bakım",       # personal care
+    "cilt bakımı",         # skin care
+    "makyaj",              # makeup
+    "saç bakımı",          # hair care
+    "parfüm",              # perfume
+    "tıraş makinesi",      # shaving machines
+    "epilasyon",           # epilators
+    "saç kurutma makinesi", # hair dryers
+    "duş jeli",            # shower gel
+    "diş fırçası",         # toothbrush
+    
+    # Sports & Outdoor
+    "spor ayakkabı",       # sports shoes
+    "spor ekipmanları",    # sports equipment
+    "yoga matı",           # yoga mat
+    "fitness",             # fitness equipment
+    "kamp malzemeleri",    # camping gear
+    "bisiklet",            # bicycles
+    "koşu ayakkabısı",     # running shoes
+    "spor çantası",        # sports bags
+    "ağırlık seti",        # weight sets
+    "tenis raketi",        # tennis rackets
+    
+    # Baby & Kids
+    "bebek ürünleri",      # baby products
+    "oyuncak",             # toys
+    "bebek arabası",       # baby strollers
+    "bebek bakım",         # baby care
+    "çocuk ayakkabı",      # kids shoes
+    "çocuk giyim",         # kids clothing
+    "emzik",               # pacifiers
+    "biberon",             # baby bottles
+    "çocuk odası",         # kids room
+    "lego",                # lego toys
+    
+    # Books & Stationery
+    "kitap",               # books
+    "roman",               # novels
+    "kırtasiye",           # stationery
+    "defter",              # notebooks
+    "kalem",               # pens
+    "okul çantası",        # school bags
+    "boyama kitabı",       # coloring books
+    "ajanda",              # planners
+    
+    # Automotive & Tools
+    "oto aksesuar",        # auto accessories
+    "araç içi",            # car interior
+    "araba parfümü",       # car perfume
+    "oto yıkama",          # car wash supplies
+    "takım çantası",       # tool bags
+    "matkap",              # drills
+    "hırdavat",            # hardware
+    
+    # Pet Supplies
+    "kedi maması",         # cat food
+    "köpek maması",        # dog food
+    "kedi kumu",           # cat litter
+    "köpek oyuncağı",      # dog toys
+    "akvaryum",            # aquarium
+    "pet mama kabı",       # pet food bowls
+    
+    # Health & Wellness
+    "vitamin",             # vitamins
+    "takviye gıda",        # supplements
+    "kan basıncı aleti",   # blood pressure monitors
+    "termometre",          # thermometers
+    "masaj aleti",         # massage devices
+    "ağırlık tartısı",     # scales
+    
+    # Garden & DIY
+    "bahçe malzemeleri",   # garden supplies
+    "saksı",               # flower pots
+    "bahçe aletleri",      # garden tools
+    "hortum",              # hoses
+    "boya",                # paint
+    
+    # Office & Business
+    "ofis malzemeleri",    # office supplies
+    "yazıcı",              # printers
+    "ofis koltuğu",        # office chairs
+    "masa lambası",        # desk lamps
+    "evrak çantası",       # briefcases
+    
+    # Food & Beverages
+    "kahve",               # coffee
+    "çay",                 # tea
+    "baharat",             # spices
+    "çikolata",            # chocolate
+    "atıştırmalık",        # snacks
+    
+    # Hobby & Collectibles
+    "müzik aleti",         # musical instruments
+    "gitar",               # guitars
+    "puzzle",              # puzzles
+    "satranç",             # chess
+    "maket",               # model kits
+    
+    # Seasonal & Special
+    "hediye",              # gifts
+    "parti malzemeleri",   # party supplies
+    "yılbaşı süsü",        # christmas decorations
+    "piknik"             # picnic items
 ]
 
-MAX_LINKS_PER_CATEGORY = 35  # URLs to collect per category
+MAX_LINKS_PER_CATEGORY = 100  # URLs to collect per category
 MAX_SCROLL_ATTEMPTS = 20      # How many times to scroll
 DATABASE_FILE = 'product_urls.db'
 

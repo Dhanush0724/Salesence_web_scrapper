@@ -5,6 +5,22 @@ product_urls = [
         # Add more URLs here
     ]
 
+source venv/Scripts/activate
+
+PRODUCT_URLS = [
+    "https://www.trendyol.com/kitchen-queen-home/katlanir-kovali-turuncu-mob-55-cm-kendinden-sikmali-mop-p-900924946",
+    "https://www.trendyol.com/agarta/dogal-el-yapimi-bebek-sabunu-150-gr-p-31326231",
+    "https://www.trendyol.com/tudors/unisex-slim-fit-dar-kesim-100-pamuk-yumusak-dokulu-siyah-bisiklet-yaka-tisort-p-819588224",
+    "https://www.trendyol.com/jbl/tune-525bt-beyaz-multi-connect-wireless-kulak-ustu-kulaklik-p-901305992",
+    "https://www.trendyol.com/bgk/5-cift-surat-ifade-desenli-cocuk-corap-p-803414049",
+    "https://www.trendyol.com/zuhre-ana/bromelain-ananas-iceren-detox-surubu-p-796088323",
+    "https://www.trendyol.com/kiperin/100-saf-ve-dogal-yuksek-biyoaktif-cift-hidrolize-kolajen-peptitler-iceren-diyet-takviyesi-300gr-p-1047194157",
+    "https://www.trendyol.com/embeauty/ultra-siyah-dolgunlastirici-maskara-hacim-ve-uzunluk-etkili-p-1016742922",
+    "https://www.trendyol.com/lollis/real-look-mascara-with-keratin-keratin-icerikli-real-look-maskara-rimel-p-71180067",
+    "https://www.trendyol.com/kenko/pomodoro-ogrenci-saati-kronometreli-ders-calisma-saati-dijital-masa-saati-p-57736809",
+    "https://www.trendyol.com/farkli-bi-kagit/56x110cm-turkiye-haritasi-akilli-kagit-pratik-tutunabilir-seffaf-tahta-p-240990191",
+    "https://www.trendyol.com/sherlocked/gez-kazi-magnet-turkiye-haritasi-kazinabilir-harita-gezkazi-turkiye-haritasi-magnet-p-945476156"
+]
 
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
@@ -13,13 +29,25 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
 import time
+import traceback
 
-PRODUCT_URL = "https://www.trendyol.com/kitchen-queen-home/katlanir-kovali-turuncu-mob-55-cm-kendinden-sikmali-mop-p-900924946"
+# -------------------------------------------------
+# 1. PRODUCT LIST (ADD LINKS HERE)
+# -------------------------------------------------
+PRODUCT_URLS = [
+    "https://www.trendyol.com/kitchen-queen-home/katlanir-kovali-turuncu-mob-55-cm-kendinden-sikmali-mop-p-900924946",
+    "https://www.trendyol.com/agarta/dogal-el-yapimi-bebek-sabunu-150-gr-p-31326231",
+    "https://www.trendyol.com/tudors/unisex-slim-fit-dar-kesim-100-pamuk-yumusak-dokulu-siyah-bisiklet-yaka-tisort-p-819588224",
+    "https://www.trendyol.com/jbl/tune-525bt-beyaz-multi-connect-wireless-kulak-ustu-kulaklik-p-901305992",
+    "https://www.trendyol.com/bgk/5-cift-surat-ifade-desenli-cocuk-corap-p-803414049"
+    
+]
 
+# -------------------------------------------------
+# 2. DRIVER SETUP
+# -------------------------------------------------
 options = webdriver.ChromeOptions()
 options.add_argument("--start-maximized")
-
-# Persistent profile (login stays)
 options.add_argument(r"--user-data-dir=C:\selenium_profiles\trendyol")
 
 driver = webdriver.Chrome(
@@ -29,175 +57,141 @@ driver = webdriver.Chrome(
 
 wait = WebDriverWait(driver, 30)
 
-try:
-    # -------------------------------------------------
-    # 1. OPEN PRODUCT PAGE
-    # -------------------------------------------------
-    driver.get(PRODUCT_URL)
+# -------------------------------------------------
+# 3. SAFE EXTRACT HELPER
+# -------------------------------------------------
+def safe_extract(xpath_list, field_name):
+    for xpath in xpath_list:
+        try:
+            element = driver.find_element(By.XPATH, xpath)
+            value = element.text.strip()
+            if value and value != ":" and len(value) > 1:
+                return value
+        except:
+            continue
+    return "Not found"
 
-    # -------------------------------------------------
-    # 2. REJECT COOKIES (IF PRESENT)
-    # -------------------------------------------------
+# -------------------------------------------------
+# 4. PROCESS SINGLE PRODUCT
+# -------------------------------------------------
+def process_product(product_url):
+    print(f"\nProcessing: {product_url}")
+
     try:
-        reject_btn = wait.until(
-            EC.element_to_be_clickable(
-                (By.XPATH, "//button[contains(., 'Reddet') or contains(., 'Reject')]")
+        driver.get(product_url)
+
+        # Reject cookies if present
+        try:
+            reject_btn = wait.until(
+                EC.element_to_be_clickable(
+                    (By.XPATH, "//button[contains(., 'Reddet') or contains(., 'Reject')]")
+                )
+            )
+            reject_btn.click()
+            time.sleep(1)
+        except:
+            pass
+
+        # Remove overlay
+        driver.execute_script("""
+            const overlay = document.querySelector('[data-testid="overlay"]');
+            if (overlay) overlay.remove();
+        """)
+
+        # Click Buy Now
+        buy_now_btn = wait.until(
+            EC.presence_of_element_located(
+                (By.XPATH, "//button[.//span[normalize-space()='Şimdi Al'] or normalize-space()='Şimdi Al']")
             )
         )
-        reject_btn.click()
-        time.sleep(1)
-        print("Cookies rejected.")
-    except:
-        print("No cookie popup.")
+        driver.execute_script("arguments[0].scrollIntoView({block:'center'});", buy_now_btn)
+        time.sleep(0.5)
+        driver.execute_script("arguments[0].click();", buy_now_btn)
 
-    # -------------------------------------------------
-    # 3. REMOVE ONBOARDING OVERLAY
-    # -------------------------------------------------
-    driver.execute_script("""
-        const overlay = document.querySelector('[data-testid="overlay"]');
-        if (overlay) overlay.remove();
-    """)
-    print("Onboarding overlay cleared.")
-
-    # -------------------------------------------------
-    # 4. CLICK BUY NOW (ŞİMDİ AL)
-    # -------------------------------------------------
-    buy_now_btn = wait.until(
-        EC.presence_of_element_located(
-            (
-                By.XPATH,
-                "//button[.//span[normalize-space()='Şimdi Al'] or normalize-space()='Şimdi Al']"
+        # Wait checkout
+        wait.until(
+            EC.presence_of_element_located(
+                (By.XPATH, "//*[contains(text(),'Sipariş') or contains(text(),'Özet')]")
             )
         )
-    )
 
-    driver.execute_script(
-        "arguments[0].scrollIntoView({block:'center'});",
-        buy_now_btn
-    )
-    time.sleep(0.5)
-    driver.execute_script("arguments[0].click();", buy_now_btn)
-    print("Buy Now clicked.")
-
-    # -------------------------------------------------
-    # 5. WAIT FOR CHECKOUT PAGE
-    # -------------------------------------------------
-    wait.until(
-        EC.presence_of_element_located(
-            (By.XPATH, "//*[contains(text(),'Sipariş') or contains(text(),'Özet')]")
+        # Open distance sales contract
+        contract = wait.until(
+            EC.presence_of_element_located(
+                (By.XPATH, "//*[contains(text(),'Mesafeli Satış Sözleşmesi')]")
+            )
         )
-    )
-    print("Checkout page loaded.")
+        driver.execute_script("arguments[0].scrollIntoView({block:'center'});", contract)
+        time.sleep(0.5)
+        driver.execute_script("arguments[0].click();", contract)
 
-    # -------------------------------------------------
-    # 6. CLICK MESAFELİ SATIŞ SÖZLEŞMESİ (TEXT ONLY)
-    # -------------------------------------------------
-    distance_sales_text = wait.until(
-        EC.presence_of_element_located(
-            (By.XPATH, "//*[contains(text(),'Mesafeli Satış Sözleşmesi')]")
-        )
-    )
+        time.sleep(2)
 
-    driver.execute_script(
-        "arguments[0].scrollIntoView({block:'center'});",
-        distance_sales_text
-    )
-    time.sleep(0.5)
+        # -------------------------------------------------
+        # EXTRACT DATA
+        # -------------------------------------------------
+        product_name = safe_extract([
+            "//th[contains(text(), 'Ürün/Hizmet')]/ancestor::table//tbody/tr[1]/td[1]"
+        ], "Product Name")
 
-    driver.execute_script(
-        "arguments[0].dispatchEvent(new MouseEvent('click', {bubbles:true}));",
-        distance_sales_text
-    )
-    print("Mesafeli Satış Sözleşmesi opened.")
+        seller_name = safe_extract([
+            "//strong[contains(text(), 'Ticaret Unvanı')]/ancestor::tr/td[last()]",
+            "//*[contains(text(), 'BAHAR YALÇIN')]"
+        ], "Seller Name")
 
-    # -------------------------------------------------
-    # 7. SWITCH TO AGREEMENT IFRAME (MODAL)
-    # -------------------------------------------------
-    time.sleep(2)
+        seller_address = safe_extract([
+            "//strong[contains(text(), 'Satıcının Adresi')]/ancestor::tr/td[last()]"
+        ], "Seller Address")
 
-    iframe = wait.until(
-        EC.presence_of_element_located((By.XPATH, "//iframe"))
-    )
+        seller_phone = safe_extract([
+            "//strong[contains(text(), 'Satıcının Telefonu')]/ancestor::tr/td[last()]"
+        ], "Seller Phone")
 
-    driver.switch_to.frame(iframe)
-    print("Switched to agreement iframe.")
+        seller_tax_id = safe_extract([
+            "//strong[contains(text(), 'Vergi Kimlik')]/ancestor::tr/td[last()]"
+        ], "Seller Tax ID")
 
-    # -------------------------------------------------
-    # 8. SCROLL INSIDE MODAL TO LOAD SELLER DETAILS
-    # -------------------------------------------------
-    scroll_container = driver.find_element(
-        By.XPATH,
-        "//div[contains(@class,'content') or contains(@class,'scroll')]"
-    )
+        seller_email = safe_extract([
+            "//strong[contains(text(), 'E-posta')]/ancestor::tr/td[last()]",
+            "//*[contains(text(), '@')]"
+        ], "Seller Email")
 
-    last_height = 0
-    while True:
-        driver.execute_script(
-            "arguments[0].scrollTop = arguments[0].scrollHeight",
-            scroll_container
-        )
-        time.sleep(1)
+        return {
+            "Product URL": product_url,
+            "Product Name": product_name,
+            "Seller Name": seller_name,
+            "Seller Address": seller_address,
+            "Seller Phone": seller_phone,
+            "Seller Tax ID": seller_tax_id,
+            "Seller Email": seller_email
+        }
 
-        new_height = driver.execute_script(
-            "return arguments[0].scrollHeight",
-            scroll_container
-        )
+    except Exception as e:
+        print("Failed:", product_url)
+        traceback.print_exc()
+        return None
 
-        if new_height == last_height:
-            break
-        last_height = new_height
+# -------------------------------------------------
+# 5. LOOP THROUGH ALL PRODUCTS
+# -------------------------------------------------
+results = []
 
-    print("Agreement modal fully scrolled.")
+for url in PRODUCT_URLS:
+    data = process_product(url)
+    if data:
+        results.append(data)
 
-    # -------------------------------------------------
-    # 9. EXTRACT DATA
-    # -------------------------------------------------
-    def extract_value(label):
-        return driver.find_element(
-            By.XPATH,
-            f"//*[contains(text(),'{label}')]/following-sibling::*"
-        ).text.strip()
+# -------------------------------------------------
+# 6. WRITE RESULTS TO FILE
+# -------------------------------------------------
+with open("seller_data_all_products.txt", "w", encoding="utf-8") as f:
+    for item in results:
+        f.write("====================================\n")
+        for key, value in item.items():
+            f.write(f"{key}: {value}\n")
+        f.write("====================================\n\n")
 
-    try:
-        seller_name = extract_value("Satıcının Ticaret Unvanı")
-    except:
-        seller_name = "Not found"
+print(f"\nCompleted. Extracted data for {len(results)} products.")
+print("Saved to seller_data_all_products.txt")
 
-    try:
-        seller_address = extract_value("Satıcının Adresi")
-    except:
-        seller_address = "Not found"
-
-    try:
-        seller_phone = extract_value("Satıcının Telefonu")
-    except:
-        seller_phone = "Not found"
-
-    try:
-        product_name = driver.find_element(
-            By.XPATH,
-            "//table//tr[1]/td[1]"
-        ).text.strip()
-    except:
-        product_name = "Not found"
-
-    # -------------------------------------------------
-    # 10. PRINT RESULTS
-    # -------------------------------------------------
-    print("\n========= EXTRACTED DETAILS =========")
-    print(f"Product Name   : {product_name}")
-    print(f"Seller Name    : {seller_name}")
-    print(f"Seller Address : {seller_address}")
-    print(f"Seller Phone   : {seller_phone}")
-    print("====================================\n")
-
-    # -------------------------------------------------
-    # 11. STOP – KEEP BROWSER OPEN
-    # -------------------------------------------------
-    input("Press ENTER to close browser...")
-
-except Exception as e:
-    print("Unexpected error:", e)
-    input("Press ENTER to close browser...")
-
-# DO NOT call driver.quit()
+input("Press ENTER to close browser...")
