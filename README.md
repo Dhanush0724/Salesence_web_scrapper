@@ -55,8 +55,11 @@ The database consists of the following tables:
 
 ## Screenshots
 
-![Screenshot 1](./screenshots/screenshot1.png)
-![Screenshot 2](./screenshots/screenshot2.png)
+![Screenshot 1](a1.png)
+![Screenshot 2](a2.png)
+![Screenshot 2](a3.png)
+![Screenshot 2](a4.png)
+
 
 ## Troubleshooting Guide
 - If you encounter any issues, please ensure that all dependencies are installed correctly.
